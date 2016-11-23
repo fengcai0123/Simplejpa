@@ -1,0 +1,55 @@
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
+         monitoring="autodetect" dynamicConfig="true"
+>
+
+    <!--
+     monitoring: 使用"autodetect"值，Terracotta集群的出现将被检测和监视，并通过Developer控制台激活
+     dynamicConfig: 能够使与这个CacheManager相关联的动态配置失活。这个设置的默认值是true-例如，动态配置是激活的
+     -->
+    <diskStore path="java.io.tmpdir" />
+
+    <defaultCache maxEntriesLocalHeap="10000" eternal="false"
+                  overflowToDisk="false" timeToIdleSeconds="120" timeToLiveSeconds="120"
+                  diskSpoolBufferSizeMB="30" maxEntriesLocalDisk="10000000"
+                  diskExpiryThreadIntervalSeconds="120" memoryStoreEvictionPolicy="LRU">
+        <persistence strategy="localTempSwap" />
+    </defaultCache>
+
+    <!--
+
+      maxBytesLocalHeap:主要是用来限制缓存所能使用的堆内存的最大字节数
+      maxEntriesLocalHeap:用来限制当前缓存在堆内存上所能保存的最大元素数量的
+      maxEntriesLocalDisk:用来限制在磁盘上所能保存的元素的最大数量的
+      eternal :缓存中对象是否永久有效,即是否永驻内存,如果为true,将忽略timeToIdleSeconds="300" timeToLiveSeconds="600"
+      timeToIdleSeconds : 缓存数据在失效前的允许闲置时间(单位:秒),仅当eternal=false时使用,默认值是0表示可闲置时间无穷大,此为可选属性
+                                                                         即访问这个cache中元素的最大间隔时间,若超过这个时间没有访问此Cache中的某个元素,那么此元素将被从Cache中清除
+      timeToLiveSeconds : 缓存数据在失效前的允许存活时间(单位:秒),仅当eternal=false时使用,默认值是0表示可存活时间无穷大
+                     即Cache中的某元素从创建到清楚的生存时间,也就是说从创建开始计时,当超过这个时间时,此元素将从Cache中清除
+      overflowToDisk :   内存不足时,是否启用磁盘缓存(即内存中对象数量达到maxElementsInMemory时,Ehcache会将对象写到磁盘中)
+      memoryStoreEvictionPolicy : 内存存储与释放策略,即达到maxElementsInMemory限制时,Ehcache会根据指定策略清理内存
+                                 共有三种策略,分别为LRU(最近最少使用)、LFU(最常用的)、FIFO(先进先出)
+      transactionalMode: 使ehcache作为JTA事务的参与者
+
+      -->
+
+    <cache name="myCache" maxEntriesLocalHeap="10000"
+           maxEntriesLocalDisk="1000" eternal="false" diskSpoolBufferSizeMB="30"
+           timeToIdleSeconds="300" timeToLiveSeconds="600"
+           memoryStoreEvictionPolicy="LRU" transactionalMode="off">
+        <cacheEventListenerFactory class="com.travelsky.pss.listener.MyCacheEventListenerFactory"/>
+        <persistence strategy="localTempSwap" />
+    </cache>
+
+    <!-- 页面全部缓存 -->
+    <cache name="SimplePageCachingFilter"
+           maxElementsInMemory="10"
+           maxElementsOnDisk="10"
+           eternal="false"
+           overflowToDisk="false"
+           timeToIdleSeconds="120"
+           timeToLiveSeconds="60"
+           memoryStoreEvictionPolicy="LFU">
+    </cache>
+
+</ehcache>
